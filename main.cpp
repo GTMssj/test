@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <stack>
+#include <queue>
 using namespace std;
 
 class Bot{
@@ -14,7 +15,6 @@ public:
 	}
 
 	void move(char dir, int step, char* arr){
-		arr[maxx*posy + posx] = '+';
 		switch (dir){
 			case 'U':
 				posy -= step;
@@ -33,7 +33,7 @@ public:
 				posx += step;
 				break;
 		}
-		//cout << dir << ", " << posx << ", " << posy << endl;
+		arr[maxx*posy + posx] = '+';
 	}
 private:
 	int maxx, maxy;
@@ -70,59 +70,86 @@ int probe(char dir, char* arr, int n, int m, int x, int y){
 }
 
 int main(){
-	int n = 3;
-	int m = 7;
-	char matrix[n][m] = {
-		{'.','.','.','#','.','.','.'}, 
-		{'#','#','.','.','.','.','.'}, 
+	int n;
+	int m;
+	//cin >> n >> m;
+	n = 3;
+	m = 7;
+	//char matrix[n][m];
+	char matrix[n][m]{
+		{'.','.','.','.','.','.','.'}, 
+		{'.','#','.','#','#','#','.'}, 
 		{'.','.','.','.','.','.','.'}
 	};
+	/*
 	for(int i = 0; i < n; i ++){
 		for(int j = 0; j < m; j ++){
-			cout << matrix[i][j];
+			cin >> matrix[i][j];
 		}
-		cout << endl;
 	}
+	*/
+	matrix[0][0] = '+';
 
 	Bot bot(n, m);
-	//string cmd = "UDD(RRD(R)*D)3";
-	string cmd = "(RDRUL)5";
-	cout << cmd << endl;
+	string cmdmain;
+	//cin >> cmdmain;
+	cmdmain = "(R)*(D)*";
 
-	stack<int> s;
-	int lind, rind, iteration;
+	queue<string> cmdq;
+	queue<int> xq;
+	queue<int> yq;
+	cmdq.push(cmdmain);
+	while(!cmdq.empty()){
+		string cmd = cmdq.front();
+		bot.posx = xq.front();
+		bot.posy = yq.front();
+		cmdq.pop();
+		xq.pop();
+		yq.pop();
+		stack<int> s;
+		int lind, rind, iteration;
 
-	for(int i = 0; i < cmd.length(); i ++){
-		if(cmd[i] == '(') s.push(i);
-		if(cmd[i] == ')' && cmd[i+1] != '*'){
-			lind = s.top();
-			s.pop();
-			rind = i;
-			string itsub = cmd.substr(rind+1, 1);
-			int iteration = stoi(itsub);
-			string sub = cmd.substr(lind+1, rind-lind-1);
-			cout << sub << endl;
-			string rep;
-			for(int j = 0; j < iteration; j ++){
-				rep += sub;
+		for(int i = 0; i < cmd.length(); i ++){
+			if(cmd[i] == '(') s.push(i);
+			if(cmd[i] == ')' && cmd[i+1] != '*'){
+				lind = s.top();
+				s.pop();
+				rind = i;
+				string itsub = cmd.substr(rind+1, 1);
+				int iteration = stoi(itsub);
+				string sub = cmd.substr(lind+1, rind-lind-1);
+				//cout << sub << endl;
+				string rep;
+				for(int j = 0; j < iteration; j ++){
+					rep += sub;
+				}
+				cmd.replace(lind, rind-lind+2, rep);
+				//cout << cmd << endl;
 			}
-			cmd.replace(lind, rind-lind+2, rep);
-			cout << cmd << endl;
 		}
-	}
-	while (cmd.length() > 0){
-		int num = 1;
-		if (cmd[0] != '('){
-			while (cmd[num] == cmd[0]){
-				num ++;
+		while (cmd.length() > 0){
+			int num = 1;
+			if (cmd[0] != '('){
+				while (cmd[num] == cmd[0]){
+					num ++;
+				}
+				int step_probe = probe(cmd[0], &matrix[0][0], n, m, bot.posx, bot.posy);
+				bot.move(cmd[0], step_probe > num ? num : step_probe, &matrix[0][0]);
+				cmd.erase(0, num);
 			}
-			int step_probe = probe(cmd[0], &matrix[0][0], n, m, bot.posx, bot.posy);
-			bot.move(cmd[0], step_probe > num ? num : step_probe, &matrix[0][0]);
-			cmd.erase(0, num);
-		}
-		else{
-			bot.move(cmd[1], probe(cmd[1], &matrix[0][0], n, m, bot.posx, bot.posy), &matrix[0][0]);
-			cmd.erase(0, 4);
+			else{
+				int maxiter = probe(cmd[1], &matrix[0][0], n, m, bot.posx, bot.posy);
+				for(int i = 0; i <= maxiter; i ++){
+					xq.push(bot.posx);
+					yq.push(bot.posy);
+					string plus = "";
+					for(int t = 0; t < maxiter-i; t++){
+						plus += cmd[1];
+					}
+					cmdq.push(plus+cmd.substr(4, cmd.length()-4));
+				}
+				cmd.erase(0, 4);
+			}
 		}
 	}
 	for(int i = 0; i < n; i ++){
