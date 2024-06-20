@@ -72,28 +72,29 @@ int probe(char dir, char* arr, int n, int m, int x, int y){
 int main(){
 	int n;
 	int m;
-	//cin >> n >> m;
-	n = 3;
-	m = 7;
-	//char matrix[n][m];
+	cin >> n >> m;
+	//n = 3;
+	//m = 7;
+	char matrix[n][m];
+	/*
 	char matrix[n][m]{
 		{'.','.','.','.','.','.','.'}, 
 		{'.','#','.','#','#','#','.'}, 
 		{'.','.','.','.','.','.','.'}
 	};
-	/*
+	*/
 	for(int i = 0; i < n; i ++){
 		for(int j = 0; j < m; j ++){
 			cin >> matrix[i][j];
 		}
 	}
-	*/
+	
 	matrix[0][0] = '+';
 
 	Bot bot(n, m);
 	string cmdmain;
-	//cin >> cmdmain;
-	cmdmain = "(R)*(D)*";
+	cin >> cmdmain;
+	//cmdmain = "(R)*(D)*";
 
 	queue<string> cmdq;
 	queue<int> xq;
